@@ -1,23 +1,26 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
-const HttpMethods = {
-  GET: 'GET',
-  POST: 'POST',
-  DELETE: 'DELETE',
-};
+enum HttpMethods {
+  GET = 'GET',
+  POST = 'POST',
+  DELETE = 'DELETE',
+}
 
 const _axios = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 const configure = () => {
   _axios.interceptors.request.use(request => {
-    console.log('Starting Request', JSON.stringify(request, null, 2));
+    console.log('Sending request');
     return request;
   });
 };
 
-const getAxiosClient = () => _axios;
+const getAxiosClient = (): AxiosInstance => _axios;
 
 const HttpService = {
   HttpMethods,

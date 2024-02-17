@@ -7,7 +7,7 @@ const Files: React.FC = () => {
   return (
     <div>
       <button onClick={() => getFiles()}>Click</button>
-      {files[0].fileName}
+      {files[0]?.fileName ?? 'No files found'}
     </div>
   );
 };
