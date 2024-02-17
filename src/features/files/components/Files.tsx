@@ -1,8 +1,8 @@
 import React from 'react';
-import { useGetFiles } from "features/files";
+import { useGetFiles } from 'features/files';
 
 const Files: React.FC = () => {
-    const { getFiles, files } = useGetFiles();
+  const { getFiles, files } = useGetFiles();
 
   return (
     <div>

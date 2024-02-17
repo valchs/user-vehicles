@@ -3,18 +3,18 @@ import React from 'react';
 
 const homePageStyle = {
   display: 'flex',
-  flexDirection: 'column' as 'column',
+  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   color: '#333',
   fontSize: '24px',
   padding: '20px',
-};
+} as const;
 
 const HomePage: React.FC = () => {
   return (
     <div style={homePageStyle}>
-      <Files/>
+      <Files />
     </div>
   );
 };

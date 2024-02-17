@@ -1,3 +1,3 @@
-import useGetFiles from "features/files/hooks/useGetFiles";
+import useGetFiles from 'features/files/hooks/useGetFiles';
 
 export { useGetFiles };

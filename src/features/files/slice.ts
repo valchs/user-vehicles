@@ -1,23 +1,25 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { getFilesAction } from "features/files/actions";
-import { File } from "types/files";
+import { createSlice } from '@reduxjs/toolkit';
+import { getFilesAction } from 'features/files/actions';
+import { File } from 'types/files';
 
 const initialState: {
-    files: File[],
-    isLoading: boolean,
+  files: File[];
+  isLoading: boolean;
 } = {
-    files: [{
-        fileName: "",
-    }],
-    isLoading: false,
+  files: [
+    {
+      fileName: '',
+    },
+  ],
+  isLoading: false,
 };
 
 const filesSlice = createSlice({
-  name: "files",
+  name: 'files',
   initialState,
   reducers: {},
-  extraReducers: (builder) => {
-    builder.addCase(getFilesAction.pending, (state) => {
+  extraReducers: builder => {
+    builder.addCase(getFilesAction.pending, state => {
       state.isLoading = true;
     });
     builder.addCase(getFilesAction.fulfilled, (state, action) => {
