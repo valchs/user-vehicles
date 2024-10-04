@@ -1,4 +1,4 @@
-import Files from 'features/files/components/Files';
+import UserList from 'features/users/components/UserList';
 import React from 'react';
 
 const homePageStyle = {
@@ -14,7 +14,7 @@ const homePageStyle = {
 const HomePage: React.FC = () => {
   return (
     <div style={homePageStyle}>
-      <Files />
+      <UserList />
     </div>
   );
 };

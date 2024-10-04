@@ -1,9 +1,11 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { filesReducer } from 'features/files/slice';
+import { usersReducer } from 'features/users/slice';
 
 const rootReducer = combineReducers({
   files: filesReducer,
+  users: usersReducer,
 });
 
 const store = configureStore({
