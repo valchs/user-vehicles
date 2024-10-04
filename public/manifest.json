@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "User Vehicles",
+  "name": "User Vehicles",
   "icons": [],
   "start_url": ".",
   "display": "standalone",
