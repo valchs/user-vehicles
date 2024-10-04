@@ -11,7 +11,7 @@ const homePageStyle = {
   padding: '20px',
 } as const;
 
-const HomePage: React.FC = () => {
+const UsersPage: React.FC = () => {
   return (
     <div style={homePageStyle}>
       <UserList />
@@ -19,4 +19,4 @@ const HomePage: React.FC = () => {
   );
 };
 
-export default HomePage;
+export default UsersPage;

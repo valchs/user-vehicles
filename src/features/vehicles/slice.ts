@@ -1,6 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { getVehicleLocationsAction } from 'features/vehicles/actions';
-import { User } from 'types/user';
 import { VehicleLocation } from 'types/vehicleLocation';
 
 interface UsersState {
