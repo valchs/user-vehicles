@@ -1,4 +1,4 @@
-import * as FilesClient from 'api/clients/files';
 import * as UsersClient from 'api/clients/users';
+import * as VehiclesClient from 'api/clients/vehicles';
 
-export { FilesClient, UsersClient };
+export { UsersClient, VehiclesClient };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { User } from 'types/user';
-import { useGetVehicleLocations } from 'features/users';
+import { useGetVehicleLocations } from 'features/vehicles';
 
 interface VehicleListProps {
   user: User | undefined;

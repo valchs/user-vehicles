@@ -1,8 +1,8 @@
 import React from 'react';
 import { useGetUsers } from 'features/users';
 import { useParams } from 'react-router-dom';
-import VehicleList from 'features/users/components/VehicleList';
-import Map from 'features/users/components/Map';
+import VehicleList from 'features/vehicles/components/VehicleList';
+import Map from 'features/vehicles/components/Map';
 
 const homePageStyle = {
   display: 'flex',

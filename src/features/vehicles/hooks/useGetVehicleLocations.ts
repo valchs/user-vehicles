@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from 'store';
-import { getVehicleLocationsAction } from 'features/users/actions';
+import { getVehicleLocationsAction } from 'features/vehicles/actions';
 
 const useGetVehicleLocations = () => {
   const dispatch = useAppDispatch();
