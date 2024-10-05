@@ -15,6 +15,7 @@ import { Select } from 'ol/interaction';
 import { click } from 'ol/events/condition';
 import Overlay from 'ol/Overlay';
 import { VehicleLocation } from 'types/vehicleLocation';
+import { Address } from 'types/address';
 
 interface MapProps {
   user: User | undefined;
@@ -42,6 +43,8 @@ const mapStyle: React.CSSProperties = {
 const MapComponent: React.FC<MapProps> = ({ user }) => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
+  const vehicleLocationsRef = useRef<VehicleLocation[]>([]);
+  const currentAddressRef = useRef<Address>({ display_name: '' });
   const [map, setMap] = useState<Map | null>(null);
   const [vectorLayer, setVectorLayer] =
     useState<VectorLayer<VectorSource> | null>(null);
@@ -57,12 +60,12 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
   const { getAddress, currentAddress } = useGetAddress();
 
   useEffect(() => {
-    console.log(vehicleLocations);
+    vehicleLocationsRef.current = vehicleLocations;
   }, [vehicleLocations]);
 
-  // useEffect(() => {
-  //   console.log(currentAddress);
-  // }, [currentAddress]);
+  useEffect(() => {
+    currentAddressRef.current = currentAddress;
+  }, [currentAddress]);
 
   useEffect(() => {
     if (selectedVehicleId !== 0) {
@@ -73,9 +76,25 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
 
   useEffect(() => {
     if (user) {
-      console.log(user.userid);
-      getVehicleLocations(user.userid);
+      const fetchVehicleLocations = async () => {
+        try {
+          await getVehicleLocations(user.userid);
+        } catch (error) {
+          console.error('Error fetching vehicle locations:', error);
+        }
+      };
+      fetchVehicleLocations();
     }
+  }, []);
+
+  useEffect(() => {
+    // if (user) {
+    //   const fetchVehicleLocations = async () => {
+    //     await getVehicleLocations(user.userid);
+    //   };
+
+    //   fetchVehicleLocations();
+    // }
     if (mapRef.current) {
       // Create a vector source and layer for points
       const vectorSource = new VectorSource();
@@ -215,14 +234,14 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
     }
   };
 
-  const highlightAndShowTooltip = (
+  const highlightAndShowTooltip = async (
     features: Feature[],
     mapInstance: Map,
     tooltipElement: HTMLDivElement | null,
     tooltipOverlay: Overlay,
     selectedOnMap: boolean
   ) => {
-    features.forEach(feature => {
+    for (const feature of features) {
       feature.setStyle(
         new Style({
           image: new CircleStyle({
@@ -249,20 +268,24 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
         const selectedVehicle = user?.vehicles.find(
           x => x.vehicleid === vehicleId
         );
-        const selectedVehicleLocation = vehicleLocations?.find(
+        const selectedVehicleLocation = vehicleLocationsRef.current?.find(
           x => x.vehicleid === vehicleId
         );
         console.log(selectedVehicleLocation);
-        console.log(vehicleLocations);
+        console.log(vehicleLocationsRef.current);
         console.log(vehicleId);
         if (selectedVehicleLocation) {
-          getAddress(selectedVehicleLocation.lat, selectedVehicleLocation.lon);
+          await getAddress(
+            selectedVehicleLocation.lat,
+            selectedVehicleLocation.lon
+          );
         }
         // Show the tooltip with vehicleId, latitude, and longitude
-        tooltipElement!.innerHTML = `${selectedVehicle?.make} ${selectedVehicle?.model}<br>${currentAddress.display_name}<br><img src="${selectedVehicle?.foto}" alt="Failed to load image" width="100%" height="auto"><br>`;
+        console.log(currentAddressRef.current.display_name);
+        tooltipElement!.innerHTML = `${selectedVehicle?.make} ${selectedVehicle?.model}<br>${currentAddressRef.current.display_name}<br><img src="${selectedVehicle?.foto}" alt="Failed to load image" width="100%" height="auto"><br>`;
         tooltipOverlay.setPosition(coordinates);
       }
-    });
+    }
 
     if (features.length === 0) {
       tooltipOverlay.setPosition(undefined);

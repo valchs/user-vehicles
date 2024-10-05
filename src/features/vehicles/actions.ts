@@ -6,8 +6,12 @@ import { Address } from 'types/address';
 export const getVehicleLocationsAction = createAsyncThunk<
   VehicleLocation[],
   number
->('users/getVehicleLocations', async (userId: number) => {
+>('users/getVehicleLocations', async (userId: number, { rejectWithValue }) => {
   const response = await VehiclesClient.getVehicleLocations(userId);
+  if (response === undefined) {
+    console.log('Vehicle location data is undefined, retrying...');
+    return rejectWithValue('Data is undefined');
+  }
   return response;
 });
 
