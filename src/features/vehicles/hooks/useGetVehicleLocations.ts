@@ -3,7 +3,7 @@ import { getVehicleLocationsAction } from 'features/vehicles/actions';
 
 const useGetVehicleLocations = () => {
   const dispatch = useAppDispatch();
-  const { vehicleLocations } = useAppSelector(state => state.users);
+  const { vehicleLocations } = useAppSelector(state => state.vehicles);
 
   const getVehicleLocations = (userId: number) => {
     dispatch(getVehicleLocationsAction(userId)).unwrap();
