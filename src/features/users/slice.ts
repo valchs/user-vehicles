@@ -31,7 +31,7 @@ const usersSlice = createSlice({
       }
     );
     builder.addCase(getUsersAction.rejected, state => {
-      state.isLoading = false;
+      state.isLoading = true;
       state.users = [];
     });
   },

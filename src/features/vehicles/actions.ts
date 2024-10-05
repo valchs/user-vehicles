@@ -1,4 +1,4 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
+import { createAsyncThunk, createAction } from '@reduxjs/toolkit';
 import { VehicleLocation } from 'types/vehicleLocation';
 import { VehiclesClient } from 'api/clients';
 import { Address } from 'types/address';
@@ -18,3 +18,7 @@ export const getAddressAction = createAsyncThunk<
   const response = await VehiclesClient.getAddress(lat, lon);
   return response;
 });
+
+export const setSelectedVehicleIdAction = createAction<number>(
+  'setSelectedVehicleId'
+);

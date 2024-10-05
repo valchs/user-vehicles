@@ -4,9 +4,12 @@ import { User } from 'types/user';
 
 export const getUsersAction = createAsyncThunk<User[], void>(
   'users/getUsers',
-  async () => {
+  async (_, { rejectWithValue }) => {
     const response = await UsersClient.getUsers();
-    console.log(response);
+    if (response === undefined) {
+      console.log('User data is undefined, retrying...');
+      return rejectWithValue('Data is undefined');
+    }
     return response;
   }
 );

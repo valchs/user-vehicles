@@ -2,18 +2,21 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import {
   getVehicleLocationsAction,
   getAddressAction,
+  setSelectedVehicleIdAction,
 } from 'features/vehicles/actions';
 import { Address } from 'types/address';
 import { VehicleLocation } from 'types/vehicleLocation';
 
 interface VehiclesState {
   vehicleLocations: VehicleLocation[];
+  selectedVehicleId: number;
   currentAddress: Address;
   isLoading: boolean;
 }
 
 const initialState: VehiclesState = {
   vehicleLocations: [],
+  selectedVehicleId: 0,
   currentAddress: {
     display_name: '',
   },
@@ -25,6 +28,7 @@ const vehiclesSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: builder => {
+    // Get vehicle location
     builder.addCase(getVehicleLocationsAction.pending, state => {
       state.isLoading = true;
     });
@@ -39,7 +43,7 @@ const vehiclesSlice = createSlice({
       state.isLoading = false;
       state.vehicleLocations = [];
     });
-
+    // Get address
     builder.addCase(getAddressAction.pending, state => {
       state.isLoading = true;
     });
@@ -53,6 +57,10 @@ const vehiclesSlice = createSlice({
     builder.addCase(getAddressAction.rejected, state => {
       state.isLoading = false;
       state.currentAddress = initialState.currentAddress;
+    });
+    // Set selected vehicle id
+    builder.addCase(setSelectedVehicleIdAction, (state, action) => {
+      state.selectedVehicleId = action.payload;
     });
   },
 });

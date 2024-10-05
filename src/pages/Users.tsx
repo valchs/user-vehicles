@@ -6,7 +6,6 @@ const homePageStyle = {
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  color: '#333',
   fontSize: '24px',
   padding: '20px',
 } as const;

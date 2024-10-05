@@ -9,9 +9,9 @@ const homePageStyle = {
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  color: '#333',
-  fontSize: '24px',
+  fontSize: '18px',
   padding: '20px',
+  gap: '20px',
 } as const;
 
 const UserDetailsPage: React.FC = () => {

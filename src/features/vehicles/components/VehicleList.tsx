@@ -1,43 +1,83 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User } from 'types/user';
 import { useGetVehicleLocations } from 'features/vehicles';
+import {
+  tableStyle,
+  headerStyle,
+  rowStyle,
+  cellStyle,
+} from 'styling/TableStyles';
 
 interface VehicleListProps {
   user: User | undefined;
 }
 
-const VehicleList: React.FC<VehicleListProps> = ({ user }) => {
-  const { getVehicleLocations, vehicleLocations } = useGetVehicleLocations();
+const containerStyle: React.CSSProperties = {
+  width: '100%',
+  maxWidth: '1000px',
+  margin: '0 auto',
+};
+const buttonStyle: React.CSSProperties = {
+  backgroundColor: '#f7f7f7',
+  padding: '10px 16px',
+  borderRadius: '3px',
+  border: '1px solid #ddd',
+  cursor: 'pointer',
+  fontWeight: 'bold',
+};
 
-  const test = (id: number) => {
-    console.log(id);
+const VehicleList: React.FC<VehicleListProps> = ({ user }) => {
+  const navigate = useNavigate();
+  const { setSelectedVehicleId } = useGetVehicleLocations();
+
+  const vehicleSelected = (vehicleId: number) => {
+    setSelectedVehicleId(vehicleId);
   };
+
   return (
-    <div>
-      {' '}
+    <div style={containerStyle}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-start',
+          marginBottom: '10px',
+        }}
+      >
+        <button style={buttonStyle} onClick={() => navigate('/')}>
+          Back
+        </button>
+      </div>
       {user && user.vehicles && user.vehicles.length > 0 && (
         <div style={{ margin: '20px 0' }}>
-          <table
-            border={1}
-            cellPadding={10}
-            style={{ borderCollapse: 'collapse', width: '100%' }}
-          >
+          <table style={tableStyle}>
             <thead>
-              <tr style={{ backgroundColor: '#f2f2f2' }}>
-                <th>Vehicle ID</th>
-                <th>Make</th>
-                <th>Model</th>
+              <tr>
+                <th style={headerStyle}>Vehicle ID</th>
+                <th style={headerStyle}>Make</th>
+                <th style={headerStyle}>Model</th>
+                <th style={headerStyle}>VIN</th>
+                <th style={headerStyle}>Year</th>
               </tr>
             </thead>
             <tbody>
               {user.vehicles.map(vehicle => (
                 <tr
                   key={vehicle.vehicleid}
-                  onClick={() => test(vehicle.vehicleid)}
+                  style={rowStyle}
+                  onClick={() => vehicleSelected(vehicle.vehicleid)}
+                  onMouseEnter={e =>
+                    (e.currentTarget.style.backgroundColor = '#f2f2f2')
+                  }
+                  onMouseLeave={e =>
+                    (e.currentTarget.style.backgroundColor = 'white')
+                  }
                 >
-                  <td>{vehicle.vehicleid}</td>
-                  <td>{vehicle.make}</td>
-                  <td>{vehicle.model}</td>
+                  <td style={cellStyle}>{vehicle.vehicleid}</td>
+                  <td style={cellStyle}>{vehicle.make}</td>
+                  <td style={cellStyle}>{vehicle.model}</td>
+                  <td style={cellStyle}>{vehicle.vin}</td>
+                  <td style={cellStyle}>{vehicle.year}</td>
                 </tr>
               ))}
             </tbody>

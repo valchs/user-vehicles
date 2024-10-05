@@ -22,12 +22,10 @@ const _axiosOSM = axios.create({
 
 const configure = () => {
   _axios.interceptors.request.use(request => {
-    console.log('Sending request');
     return request;
   });
 
   _axiosOSM.interceptors.request.use(request => {
-    console.log('Sending request to OpenStreetView');
     return request;
   });
 };

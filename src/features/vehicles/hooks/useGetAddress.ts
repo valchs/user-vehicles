@@ -6,6 +6,10 @@ const useGetAddress = () => {
   const { currentAddress } = useAppSelector(state => state.vehicles);
 
   const getAddress = (lat: number, lon: number) => {
+    if (!lat || !lon) {
+      alert('Error: latitude and longitude cannot be null!');
+      return;
+    }
     dispatch(getAddressAction({ lat, lon })).unwrap();
   };
 

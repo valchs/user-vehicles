@@ -20,6 +20,25 @@ interface MapProps {
   user: User | undefined;
 }
 
+const mapContainerStyle: React.CSSProperties = {
+  width: '100%',
+  maxWidth: '1000px',
+  margin: '0 auto',
+  padding: '10px',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+  borderRadius: '10px',
+  backgroundColor: '#fff',
+  height: '500px',
+};
+
+const mapStyle: React.CSSProperties = {
+  width: '100%',
+  height: '100%',
+  border: '1px solid #ddd',
+  borderRadius: '10px',
+  overflow: 'hidden',
+};
+
 const MapComponent: React.FC<MapProps> = ({ user }) => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
@@ -29,11 +48,32 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
   const [selectInteraction, setSelectInteraction] = useState<Select | null>(
     null
   );
-  const { getVehicleLocations, vehicleLocations } = useGetVehicleLocations();
+  const {
+    getVehicleLocations,
+    setSelectedVehicleId,
+    vehicleLocations,
+    selectedVehicleId,
+  } = useGetVehicleLocations();
   const { getAddress, currentAddress } = useGetAddress();
 
   useEffect(() => {
+    console.log(vehicleLocations);
+  }, [vehicleLocations]);
+
+  // useEffect(() => {
+  //   console.log(currentAddress);
+  // }, [currentAddress]);
+
+  useEffect(() => {
+    if (selectedVehicleId !== 0) {
+      handleVehicleSelected(selectedVehicleId);
+    }
+    setSelectedVehicleId(0);
+  }, [selectedVehicleId]);
+
+  useEffect(() => {
     if (user) {
+      console.log(user.userid);
       getVehicleLocations(user.userid);
     }
     if (mapRef.current) {
@@ -52,7 +92,7 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
         border: 1px solid black; 
         padding: 5px; 
         border-radius: 3px;  
-        width: 300px; 
+        width: 200px; 
         height: auto;`;
       tooltipRef.current = tooltipElement;
 
@@ -92,7 +132,8 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
           event.selected,
           mapInstance,
           tooltipElement,
-          tooltipOverlay
+          tooltipOverlay,
+          true
         );
       });
 
@@ -106,7 +147,6 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
 
   useEffect(() => {
     if (Array.isArray(vehicleLocations) && vehicleLocations.length > 0) {
-      console.log(vehicleLocations);
       vehicleLocations.forEach(vl => plotPoint(vl));
     }
   }, [vehicleLocations]);
@@ -122,9 +162,6 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
       ),
     });
     pointFeature.set('vehicleId', vehicleLocation.vehicleid);
-    console.log(
-      user?.vehicles.find(x => x.vehicleid === vehicleLocation.vehicleid)?.color
-    );
     pointFeature.setStyle(
       new Style({
         image: new CircleStyle({
@@ -151,7 +188,7 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
     map.getView().setZoom(12);
   };
 
-  const handleVehicleClick = (vehicleId: number) => {
+  const handleVehicleSelected = (vehicleId: number) => {
     if (!vectorLayer || !map || !selectInteraction) return;
 
     // Find the feature corresponding to the clicked vehicleId
@@ -172,7 +209,8 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
         [feature],
         map,
         tooltipRef.current,
-        map.getOverlayById('tooltip') as Overlay
+        map.getOverlayById('tooltip') as Overlay,
+        false
       );
     }
   };
@@ -181,7 +219,8 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
     features: Feature[],
     mapInstance: Map,
     tooltipElement: HTMLDivElement | null,
-    tooltipOverlay: Overlay
+    tooltipOverlay: Overlay,
+    selectedOnMap: boolean
   ) => {
     features.forEach(feature => {
       feature.setStyle(
@@ -200,8 +239,11 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
       const geometry = feature.getGeometry();
       if (geometry && geometry instanceof Point) {
         const coordinates = geometry.getCoordinates();
-        mapInstance?.getView().setCenter(coordinates || [0, 0]);
-        mapInstance?.getView().setZoom(13);
+
+        if (!selectedOnMap) {
+          mapInstance?.getView().setCenter(coordinates || [0, 0]);
+          mapInstance?.getView().setZoom(13);
+        }
 
         const vehicleId = feature.get('vehicleId');
         const selectedVehicle = user?.vehicles.find(
@@ -210,11 +252,14 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
         const selectedVehicleLocation = vehicleLocations?.find(
           x => x.vehicleid === vehicleId
         );
+        console.log(selectedVehicleLocation);
+        console.log(vehicleLocations);
+        console.log(vehicleId);
         if (selectedVehicleLocation) {
           getAddress(selectedVehicleLocation.lat, selectedVehicleLocation.lon);
         }
         // Show the tooltip with vehicleId, latitude, and longitude
-        tooltipElement!.innerHTML = `${selectedVehicle?.make} ${selectedVehicle?.model}<br>${currentAddress.display_name}<br><img src="${selectedVehicle?.foto}" alt="Vehicle Image" width="100%" height="auto"><br>`;
+        tooltipElement!.innerHTML = `${selectedVehicle?.make} ${selectedVehicle?.model}<br>${currentAddress.display_name}<br><img src="${selectedVehicle?.foto}" alt="Failed to load image" width="100%" height="auto"><br>`;
         tooltipOverlay.setPosition(coordinates);
       }
     });
@@ -225,41 +270,9 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
   };
 
   return (
-    <>
-      {user && user.vehicles && user.vehicles.length > 0 && (
-        <div style={{ margin: '20px 0' }}>
-          <table
-            border={1}
-            cellPadding={10}
-            style={{ borderCollapse: 'collapse', width: '100%' }}
-          >
-            <thead>
-              <tr style={{ backgroundColor: '#f2f2f2' }}>
-                <th>Vehicle ID</th>
-                <th>Make</th>
-                <th>Model</th>
-              </tr>
-            </thead>
-            <tbody>
-              {user.vehicles.map(vehicle => (
-                <tr
-                  key={vehicle.vehicleid}
-                  onClick={() => handleVehicleClick(vehicle.vehicleid)}
-                >
-                  <td>{vehicle.vehicleid}</td>
-                  <td>{vehicle.make}</td>
-                  <td>{vehicle.model}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      <div
-        ref={mapRef}
-        style={{ width: '100%', height: '400px', marginTop: '20px' }}
-      ></div>
-    </>
+    <div style={mapContainerStyle}>
+      <div style={mapStyle} ref={mapRef}></div>
+    </div>
   );
 };
 
