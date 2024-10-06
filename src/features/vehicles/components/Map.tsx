@@ -159,6 +159,7 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
         padding: 5px; 
         border-radius: 3px;  
         width: 200px; 
+        font-size: 12px; 
         height: auto;`;
       tooltipRef.current = tooltipElement;
       const tooltipOverlay = new Overlay({
@@ -302,8 +303,9 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
           ? selectedAddress.display_name
           : 'Failed to load';
         tooltipElement!.innerHTML = `
-          ${selectedVehicle?.make} ${selectedVehicle?.model}
-          <br>${addressRef.current}<br>
+          <b>Vehicle:</b> ${selectedVehicle?.make} ${selectedVehicle?.model}
+          <br>
+          <b>Address:</b> ${addressRef.current}<br><br>
           <img src="${selectedVehicle?.foto}" alt="Failed to load image" width="100%" height="auto">
           <br>`;
         tooltipOverlay.setPosition(coordinates);

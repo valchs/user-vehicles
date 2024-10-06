@@ -45,8 +45,19 @@ const VehicleList: React.FC<VehicleListProps> = ({ user }) => {
         }}
       >
         <button style={buttonStyle} onClick={() => navigate('/')}>
-          Back
+          Go Back
         </button>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-start',
+          marginBottom: '10px',
+        }}
+      >
+        <h2 style={{ marginLeft: 'auto', marginRight: 'auto', marginTop: 0 }}>
+          {user?.owner.name} {user?.owner.surname}
+        </h2>
       </div>
       {user && user.vehicles && user.vehicles.length > 0 && (
         <div style={{ margin: '20px 0' }}>
