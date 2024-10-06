@@ -41,7 +41,6 @@ const VehicleList: React.FC<VehicleListProps> = ({ user }) => {
         style={{
           display: 'flex',
           justifyContent: 'flex-start',
-          marginBottom: '10px',
         }}
       >
         <button style={buttonStyle} onClick={() => navigate('/')}>
@@ -52,7 +51,6 @@ const VehicleList: React.FC<VehicleListProps> = ({ user }) => {
         style={{
           display: 'flex',
           justifyContent: 'flex-start',
-          marginBottom: '10px',
         }}
       >
         <h2 style={{ marginLeft: 'auto', marginRight: 'auto', marginTop: 0 }}>

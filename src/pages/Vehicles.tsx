@@ -3,16 +3,7 @@ import { useGetUsers } from 'features/users';
 import { useParams } from 'react-router-dom';
 import VehicleList from 'features/vehicles/components/VehicleList';
 import Map from 'features/vehicles/components/Map';
-
-const homePageStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '18px',
-  padding: '20px',
-  gap: '20px',
-} as const;
+import { pageStyle } from 'styling/SharedStyles';
 
 const UserDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +11,7 @@ const UserDetailsPage: React.FC = () => {
   const user = users?.find(user => user.userid.toString() === id);
 
   return (
-    <div style={homePageStyle}>
+    <div style={pageStyle}>
       <VehicleList user={user} />
       <Map user={user} />
     </div>

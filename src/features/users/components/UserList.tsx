@@ -43,7 +43,16 @@ const UserList: React.FC = () => {
   return (
     <div style={containerStyle}>
       <div>
-        <h2>Users and Vehicles</h2>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-start',
+          }}
+        >
+          <h2 style={{ marginLeft: 'auto', marginRight: 'auto' }}>
+            Users and Vehicles
+          </h2>
+        </div>
         {isLoading && <p>Loading users...</p>}
         {users?.length > 0 && (
           <table style={tableStyle}>
