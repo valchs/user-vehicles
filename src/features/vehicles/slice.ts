@@ -26,7 +26,11 @@ const initialState: VehiclesState = {
 const vehiclesSlice = createSlice({
   name: 'vehicles',
   initialState,
-  reducers: {},
+  reducers: {
+    resetVehicleAddresses: state => {
+      state.vehicleAddresses = [];
+    },
+  },
   extraReducers: builder => {
     // Get vehicle location
     builder.addCase(getVehicleLocationsAction.pending, state => {
@@ -76,4 +80,5 @@ const vehiclesSlice = createSlice({
   },
 });
 
+export const { resetVehicleAddresses } = vehiclesSlice.actions;
 export const vehiclesReducer = vehiclesSlice.reducer;

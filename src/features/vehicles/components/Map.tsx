@@ -15,6 +15,9 @@ import { Select } from 'ol/interaction';
 import { click } from 'ol/events/condition';
 import Overlay from 'ol/Overlay';
 import { VehicleLocation } from 'types/vehicleLocation';
+import { resetVehicleAddresses } from 'features/vehicles/slice';
+import { useDispatch } from 'react-redux';
+import { Address } from 'types/address';
 
 interface MapProps {
   user: User | undefined;
@@ -40,6 +43,9 @@ const mapStyle: React.CSSProperties = {
 };
 
 const MapComponent: React.FC<MapProps> = ({ user }) => {
+  const dispatch = useDispatch();
+  const addressRef = useRef<string | null>(null);
+  const vehicleAddressesRef = useRef<Address[]>([]);
   const mapRef = useRef<HTMLDivElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<Map | null>(null);
@@ -48,7 +54,6 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
   const [selectInteraction, setSelectInteraction] = useState<Select | null>(
     null
   );
-  const [test, setTest] = useState<string>('initial');
   const {
     getVehicleLocations,
     setSelectedVehicleId,
@@ -56,6 +61,10 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
     selectedVehicleId,
   } = useGetVehicleLocations();
   const { getAddress, vehicleAddresses } = useGetAddress();
+
+  useEffect(() => {
+    vehicleAddressesRef.current = vehicleAddresses;
+  }, [vehicleAddresses]);
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -92,8 +101,27 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
         }
       };
       fetchVehicleLocations();
-    }
 
+      const interval = setInterval(() => {
+        console.log('Refreshing vehicle locations...');
+        dispatch(resetVehicleAddresses());
+        fetchVehicleLocations();
+      }, 60000);
+
+      return () => clearInterval(interval);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (Array.isArray(vehicleLocations) && vehicleLocations.length > 0) {
+      if (vectorLayer) {
+        vectorLayer.getSource()?.clear();
+        vehicleLocations.forEach(vl => plotPoint(vl));
+      }
+    }
+  }, [vehicleLocations, vectorLayer]);
+
+  useEffect(() => {
     if (mapRef.current) {
       // Create a vector source and layer for points
       const vectorSource = new VectorSource();
@@ -163,11 +191,11 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
     }
   }, []);
 
-  useEffect(() => {
-    if (Array.isArray(vehicleLocations) && vehicleLocations.length > 0) {
-      vehicleLocations.forEach(vl => plotPoint(vl));
-    }
-  }, [vehicleLocations]);
+  // useEffect(() => {
+  //   if (Array.isArray(vehicleLocations) && vehicleLocations.length > 0) {
+  //     vehicleLocations.forEach(vl => plotPoint(vl));
+  //   }
+  // }, [vehicleLocations]);
 
   const plotPoint = (vehicleLocation: VehicleLocation) => {
     if (!map || !vectorLayer) return;
@@ -267,10 +295,17 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
         const selectedVehicle = user?.vehicles.find(
           x => x.vehicleid === vehicleId
         );
-        const selectedAddress = vehicleAddresses.find(
+        const selectedAddress = vehicleAddressesRef.current.find(
           x => x.vehicleId === vehicleId
         );
-        tooltipElement!.innerHTML = `${selectedVehicle?.make} ${selectedVehicle?.model}<br>${selectedAddress!.display_name}<br><img src="${selectedVehicle?.foto}" alt="Failed to load image" width="100%" height="auto"><br>`;
+        addressRef.current = selectedAddress
+          ? selectedAddress.display_name
+          : 'Failed to load';
+        tooltipElement!.innerHTML = `
+          ${selectedVehicle?.make} ${selectedVehicle?.model}
+          <br>${addressRef.current}<br>
+          <img src="${selectedVehicle?.foto}" alt="Failed to load image" width="100%" height="auto">
+          <br>`;
         tooltipOverlay.setPosition(coordinates);
       }
     }
