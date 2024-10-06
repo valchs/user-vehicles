@@ -42,6 +42,8 @@ const mapStyle: React.CSSProperties = {
   overflow: 'hidden',
 };
 
+const MAX_CACHE_TIME = 3000; // Vehicle location data should be cached for 30 seconds
+
 const MapComponent: React.FC<MapProps> = ({ user }) => {
   const dispatch = useDispatch();
   const addressRef = useRef<string | null>(null);
@@ -59,6 +61,7 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
     setSelectedVehicleId,
     vehicleLocations,
     selectedVehicleId,
+    lastFetched,
   } = useGetVehicleLocations();
   const { getAddress, vehicleAddresses } = useGetAddress();
 
@@ -67,6 +70,7 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
   }, [vehicleAddresses]);
 
   useEffect(() => {
+    console.log(vehicleLocations);
     const fetchAddresses = async () => {
       if (vehicleLocations.length > 0) {
         await Promise.all(
@@ -95,7 +99,13 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
     if (user) {
       const fetchVehicleLocations = async () => {
         try {
-          await getVehicleLocations(user.userid);
+          const shouldFetchData =
+            !lastFetched ||
+            Date.now() - lastFetched > MAX_CACHE_TIME ||
+            !vehicleLocations.some(vl => vl.userid === user.userid);
+          if (shouldFetchData) {
+            await getVehicleLocations(user.userid);
+          }
         } catch (error) {
           console.error('Error fetching vehicle locations:', error);
         }
@@ -116,7 +126,9 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
     if (Array.isArray(vehicleLocations) && vehicleLocations.length > 0) {
       if (vectorLayer) {
         vectorLayer.getSource()?.clear();
-        vehicleLocations.forEach(vl => plotPoint(vl));
+        vehicleLocations
+          .filter(x => x.userid === user?.userid)
+          .forEach(vl => plotPoint(vl));
       }
     }
   }, [vehicleLocations, vectorLayer]);
@@ -190,12 +202,6 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
       return () => mapInstance.setTarget(undefined); // Clean up on unmount
     }
   }, []);
-
-  // useEffect(() => {
-  //   if (Array.isArray(vehicleLocations) && vehicleLocations.length > 0) {
-  //     vehicleLocations.forEach(vl => plotPoint(vl));
-  //   }
-  // }, [vehicleLocations]);
 
   const plotPoint = (vehicleLocation: VehicleLocation) => {
     if (!map || !vectorLayer) return;

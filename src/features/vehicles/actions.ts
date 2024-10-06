@@ -12,6 +12,7 @@ export const getVehicleLocationsAction = createAsyncThunk<
     console.log('Vehicle location data is undefined, retrying...');
     return rejectWithValue('Data is undefined');
   }
+  response.map(vl => (vl.userid = userId));
   return response;
 });
 

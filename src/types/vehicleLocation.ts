@@ -1,5 +1,6 @@
 export interface VehicleLocation {
   vehicleid: number;
+  userid: number;
   lat: number;
   lon: number;
   address: string;

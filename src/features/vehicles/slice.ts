@@ -40,7 +40,18 @@ const vehiclesSlice = createSlice({
       getVehicleLocationsAction.fulfilled,
       (state, action: PayloadAction<VehicleLocation[]>) => {
         state.isLoading = false;
-        state.vehicleLocations = action.payload;
+
+        const combinedVehicleLocations = [
+          ...state.vehicleLocations,
+          ...action.payload,
+        ];
+        const uniqueVehicleLocations = Array.from(
+          new Map(
+            combinedVehicleLocations.map(vl => [vl.vehicleid, vl])
+          ).values()
+        );
+        state.vehicleLocations = uniqueVehicleLocations;
+
         state.lastFetched = Date.now();
       }
     );

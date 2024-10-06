@@ -8,7 +8,8 @@ const useGetAddress = () => {
 
   const getAddress = async (vehicleLocation: VehicleLocation) => {
     if (!vehicleLocation.lat || !vehicleLocation.lon) {
-      // alert('Error: latitude and longitude cannot be null!');
+      // NOTE: In real world, more user friendly notification should be displayed, e.g., Snackbar
+      alert('Error: latitude and longitude cannot be null!');
       return;
     }
     await dispatch(getAddressAction(vehicleLocation)).unwrap();
