@@ -42,20 +42,24 @@ const mapStyle: React.CSSProperties = {
   overflow: 'hidden',
 };
 
-const MAX_CACHE_TIME = 3000; // Vehicle location data should be cached for 30 seconds
+const MAX_CACHE_TIME = 30000; // Vehicle location data should be cached for 30 seconds
+const REFRESH_MAP_INTERVAL = 60000; // Reload plotted points on map every minute
 
 const MapComponent: React.FC<MapProps> = ({ user }) => {
   const dispatch = useDispatch();
+
   const addressRef = useRef<string | null>(null);
   const vehicleAddressesRef = useRef<Address[]>([]);
   const mapRef = useRef<HTMLDivElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
+
   const [map, setMap] = useState<Map | null>(null);
   const [vectorLayer, setVectorLayer] =
     useState<VectorLayer<VectorSource> | null>(null);
   const [selectInteraction, setSelectInteraction] = useState<Select | null>(
     null
   );
+
   const {
     getVehicleLocations,
     setSelectedVehicleId,
@@ -70,7 +74,6 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
   }, [vehicleAddresses]);
 
   useEffect(() => {
-    console.log(vehicleLocations);
     const fetchAddresses = async () => {
       if (vehicleLocations.length > 0) {
         await Promise.all(
@@ -86,7 +89,7 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
       }
     };
     fetchAddresses();
-  }, [vehicleLocations, vehicleAddresses, getAddress]);
+  }, [vehicleLocations]);
 
   useEffect(() => {
     if (selectedVehicleId !== 0) {
@@ -110,13 +113,20 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
           console.error('Error fetching vehicle locations:', error);
         }
       };
+      const forseFetchVehicleLocations = async () => {
+        try {
+          dispatch(resetVehicleAddresses());
+          await getVehicleLocations(user.userid);
+        } catch (error) {
+          console.error('Error fetching vehicle locations:', error);
+        }
+      };
       fetchVehicleLocations();
 
       const interval = setInterval(() => {
         console.log('Refreshing vehicle locations...');
-        dispatch(resetVehicleAddresses());
-        fetchVehicleLocations();
-      }, 60000);
+        forseFetchVehicleLocations();
+      }, REFRESH_MAP_INTERVAL);
 
       return () => clearInterval(interval);
     }
@@ -135,13 +145,11 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
 
   useEffect(() => {
     if (mapRef.current) {
-      // Create a vector source and layer for points
       const vectorSource = new VectorSource();
       const vectorLayer = new VectorLayer({
         source: vectorSource,
       });
 
-      // Create an overlay for the tooltip
       const tooltipElement = document.createElement('div');
       tooltipElement.className = 'tooltip';
       tooltipElement.style.cssText = `
@@ -153,7 +161,6 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
         width: 200px; 
         height: auto;`;
       tooltipRef.current = tooltipElement;
-
       const tooltipOverlay = new Overlay({
         element: tooltipElement,
         id: 'tooltip',
@@ -161,12 +168,11 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
         offset: [0, -15],
       });
 
-      // Initialize the map
       const mapInstance = new Map({
         target: mapRef.current,
         layers: [
           new TileLayer({
-            source: new OSM(), // Base map layer
+            source: new OSM(),
           }),
           vectorLayer,
         ],
@@ -177,14 +183,11 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
         overlays: [tooltipOverlay],
       });
 
-      // Set up the click interaction on the vector layer
       const selectInteraction = new Select({
         condition: click,
         layers: [vectorLayer],
       });
-
       mapInstance.addInteraction(selectInteraction);
-
       selectInteraction.on('select', async event => {
         await highlightAndShowTooltip(
           event.selected,
@@ -199,14 +202,12 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
       setVectorLayer(vectorLayer);
       setSelectInteraction(selectInteraction);
 
-      return () => mapInstance.setTarget(undefined); // Clean up on unmount
+      return () => mapInstance.setTarget(undefined);
     }
   }, []);
 
   const plotPoint = (vehicleLocation: VehicleLocation) => {
     if (!map || !vectorLayer) return;
-
-    // Transform from EPSG:4326 (lat/lon) to EPSG:3857 (map projection)
     const pointFeature = new Feature({
       geometry: new Point([vehicleLocation.lon, vehicleLocation.lat]).transform(
         'EPSG:4326',
@@ -231,7 +232,6 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
       })
     );
 
-    // Add the point to the vector layer
     vectorLayer.getSource()?.addFeature(pointFeature);
 
     map
@@ -242,21 +242,15 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
 
   const handleVehicleSelected = async (vehicleId: number) => {
     if (!vectorLayer || !map || !selectInteraction) return;
-
-    // Find the feature corresponding to the clicked vehicleId
     const feature = vectorLayer
       .getSource()
       ?.getFeatures()
       .find(f => f.get('vehicleId') === vehicleId);
 
     if (feature) {
-      // Clear previous selection
       selectInteraction.getFeatures().clear();
-
-      // Add the clicked feature to the selection
       selectInteraction.getFeatures().push(feature);
 
-      // Highlight the feature and show the tooltip
       await highlightAndShowTooltip(
         [feature],
         map,
@@ -299,10 +293,10 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
 
         const vehicleId = feature.get('vehicleId');
         const selectedVehicle = user?.vehicles.find(
-          x => x.vehicleid === vehicleId
+          v => v.vehicleid === vehicleId
         );
         const selectedAddress = vehicleAddressesRef.current.find(
-          x => x.vehicleId === vehicleId
+          va => va.vehicleId === vehicleId
         );
         addressRef.current = selectedAddress
           ? selectedAddress.display_name
@@ -315,7 +309,6 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
         tooltipOverlay.setPosition(coordinates);
       }
     }
-
     if (features.length === 0) {
       tooltipOverlay.setPosition(undefined);
     }
