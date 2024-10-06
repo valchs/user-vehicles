@@ -3,7 +3,9 @@ import { getUsersAction } from 'features/users/actions';
 
 const useGetUsers = () => {
   const dispatch = useAppDispatch();
-  const { users, isLoading } = useAppSelector(state => state.users);
+  const { users, isLoading, lastFetched } = useAppSelector(
+    state => state.users
+  );
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   const getUsers = async () => {
@@ -18,7 +20,7 @@ const useGetUsers = () => {
     }
   };
 
-  return { getUsers, users, isLoading };
+  return { getUsers, users, isLoading, lastFetched };
 };
 
 export default useGetUsers;

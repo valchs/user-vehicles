@@ -14,14 +14,20 @@ const containerStyle: React.CSSProperties = {
   margin: '0 auto',
 };
 
+const MAX_CACHE_TIME = 300000; // Cache user data for 5 minutes
+
 const UserList: React.FC = () => {
-  const { getUsers, users, isLoading } = useGetUsers();
+  const { getUsers, users, isLoading, lastFetched } = useGetUsers();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        await getUsers();
+        const shouldFetchData =
+          !lastFetched || Date.now() - lastFetched > MAX_CACHE_TIME;
+        if (shouldFetchData) {
+          await getUsers();
+        }
       } catch (error) {
         console.error('Error fetching users:', error);
       }

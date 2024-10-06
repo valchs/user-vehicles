@@ -7,12 +7,14 @@ interface UsersState {
   users: User[];
   vehicleLocations: VehicleLocation[];
   isLoading: boolean;
+  lastFetched: number | null;
 }
 
 const initialState: UsersState = {
   users: [],
   vehicleLocations: [],
   isLoading: false,
+  lastFetched: null,
 };
 
 const usersSlice = createSlice({
@@ -28,6 +30,7 @@ const usersSlice = createSlice({
       (state, action: PayloadAction<User[]>) => {
         state.isLoading = false;
         state.users = action.payload;
+        state.lastFetched = Date.now();
       }
     );
     builder.addCase(getUsersAction.rejected, state => {
