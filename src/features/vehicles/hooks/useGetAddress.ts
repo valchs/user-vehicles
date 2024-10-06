@@ -1,19 +1,20 @@
 import { useAppDispatch, useAppSelector } from 'store';
 import { getAddressAction } from 'features/vehicles/actions';
+import { VehicleLocation } from 'types/vehicleLocation';
 
 const useGetAddress = () => {
   const dispatch = useAppDispatch();
-  const { currentAddress } = useAppSelector(state => state.vehicles);
+  const { vehicleAddresses } = useAppSelector(state => state.vehicles);
 
-  const getAddress = async (lat: number, lon: number) => {
-    if (!lat || !lon) {
+  const getAddress = async (vehicleLocation: VehicleLocation) => {
+    if (!vehicleLocation.lat || !vehicleLocation.lon) {
       alert('Error: latitude and longitude cannot be null!');
       return;
     }
-    await dispatch(getAddressAction({ lat, lon })).unwrap();
+    await dispatch(getAddressAction(vehicleLocation)).unwrap();
   };
 
-  return { getAddress, currentAddress };
+  return { getAddress, vehicleAddresses };
 };
 
 export default useGetAddress;

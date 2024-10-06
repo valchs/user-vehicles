@@ -15,7 +15,6 @@ import { Select } from 'ol/interaction';
 import { click } from 'ol/events/condition';
 import Overlay from 'ol/Overlay';
 import { VehicleLocation } from 'types/vehicleLocation';
-import { Address } from 'types/address';
 
 interface MapProps {
   user: User | undefined;
@@ -43,29 +42,38 @@ const mapStyle: React.CSSProperties = {
 const MapComponent: React.FC<MapProps> = ({ user }) => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
-  const vehicleLocationsRef = useRef<VehicleLocation[]>([]);
-  const currentAddressRef = useRef<Address>({ display_name: '' });
   const [map, setMap] = useState<Map | null>(null);
   const [vectorLayer, setVectorLayer] =
     useState<VectorLayer<VectorSource> | null>(null);
   const [selectInteraction, setSelectInteraction] = useState<Select | null>(
     null
   );
+  const [test, setTest] = useState<string>('initial');
   const {
     getVehicleLocations,
     setSelectedVehicleId,
     vehicleLocations,
     selectedVehicleId,
   } = useGetVehicleLocations();
-  const { getAddress, currentAddress } = useGetAddress();
+  const { getAddress, vehicleAddresses } = useGetAddress();
 
   useEffect(() => {
-    vehicleLocationsRef.current = vehicleLocations;
-  }, [vehicleLocations]);
-
-  useEffect(() => {
-    currentAddressRef.current = currentAddress;
-  }, [currentAddress]);
+    const fetchAddresses = async () => {
+      if (vehicleLocations.length > 0) {
+        await Promise.all(
+          vehicleLocations.map(async vehicleLocation => {
+            const existingAddress = vehicleAddresses.find(
+              address => address.vehicleId === vehicleLocation.vehicleid
+            );
+            if (!existingAddress) {
+              await getAddress(vehicleLocation);
+            }
+          })
+        );
+      }
+    };
+    fetchAddresses();
+  }, [vehicleLocations, vehicleAddresses, getAddress]);
 
   useEffect(() => {
     if (selectedVehicleId !== 0) {
@@ -85,16 +93,7 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
       };
       fetchVehicleLocations();
     }
-  }, []);
 
-  useEffect(() => {
-    // if (user) {
-    //   const fetchVehicleLocations = async () => {
-    //     await getVehicleLocations(user.userid);
-    //   };
-
-    //   fetchVehicleLocations();
-    // }
     if (mapRef.current) {
       // Create a vector source and layer for points
       const vectorSource = new VectorSource();
@@ -146,8 +145,8 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
 
       mapInstance.addInteraction(selectInteraction);
 
-      selectInteraction.on('select', event => {
-        highlightAndShowTooltip(
+      selectInteraction.on('select', async event => {
+        await highlightAndShowTooltip(
           event.selected,
           mapInstance,
           tooltipElement,
@@ -207,7 +206,7 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
     map.getView().setZoom(12);
   };
 
-  const handleVehicleSelected = (vehicleId: number) => {
+  const handleVehicleSelected = async (vehicleId: number) => {
     if (!vectorLayer || !map || !selectInteraction) return;
 
     // Find the feature corresponding to the clicked vehicleId
@@ -224,7 +223,7 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
       selectInteraction.getFeatures().push(feature);
 
       // Highlight the feature and show the tooltip
-      highlightAndShowTooltip(
+      await highlightAndShowTooltip(
         [feature],
         map,
         tooltipRef.current,
@@ -268,21 +267,10 @@ const MapComponent: React.FC<MapProps> = ({ user }) => {
         const selectedVehicle = user?.vehicles.find(
           x => x.vehicleid === vehicleId
         );
-        const selectedVehicleLocation = vehicleLocationsRef.current?.find(
-          x => x.vehicleid === vehicleId
+        const selectedAddress = vehicleAddresses.find(
+          x => x.vehicleId === vehicleId
         );
-        console.log(selectedVehicleLocation);
-        console.log(vehicleLocationsRef.current);
-        console.log(vehicleId);
-        if (selectedVehicleLocation) {
-          await getAddress(
-            selectedVehicleLocation.lat,
-            selectedVehicleLocation.lon
-          );
-        }
-        // Show the tooltip with vehicleId, latitude, and longitude
-        console.log(currentAddressRef.current.display_name);
-        tooltipElement!.innerHTML = `${selectedVehicle?.make} ${selectedVehicle?.model}<br>${currentAddressRef.current.display_name}<br><img src="${selectedVehicle?.foto}" alt="Failed to load image" width="100%" height="auto"><br>`;
+        tooltipElement!.innerHTML = `${selectedVehicle?.make} ${selectedVehicle?.model}<br>${selectedAddress!.display_name}<br><img src="${selectedVehicle?.foto}" alt="Failed to load image" width="100%" height="auto"><br>`;
         tooltipOverlay.setPosition(coordinates);
       }
     }

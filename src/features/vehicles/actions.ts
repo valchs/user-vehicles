@@ -15,13 +15,17 @@ export const getVehicleLocationsAction = createAsyncThunk<
   return response;
 });
 
-export const getAddressAction = createAsyncThunk<
-  Address,
-  { lat: number; lon: number }
->('users/getAddress', async ({ lat, lon }) => {
-  const response = await VehiclesClient.getAddress(lat, lon);
-  return response;
-});
+export const getAddressAction = createAsyncThunk<Address, VehicleLocation>(
+  'users/getAddress',
+  async vehicleLocation => {
+    const response = await VehiclesClient.getAddress(
+      vehicleLocation.lat,
+      vehicleLocation.lon
+    );
+    response.vehicleId = vehicleLocation.vehicleid;
+    return response;
+  }
+);
 
 export const setSelectedVehicleIdAction = createAction<number>(
   'setSelectedVehicleId'

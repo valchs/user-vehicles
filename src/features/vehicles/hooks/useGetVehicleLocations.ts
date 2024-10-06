@@ -6,14 +6,14 @@ import {
 
 const useGetVehicleLocations = () => {
   const dispatch = useAppDispatch();
-  const { vehicleLocations, selectedVehicleId } = useAppSelector(
+  const { vehicleLocations, selectedVehicleId, lastFetched } = useAppSelector(
     state => state.vehicles
   );
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   const getVehicleLocations = async (userId: number) => {
     try {
-      await await dispatch(getVehicleLocationsAction(userId)).unwrap();
+      await dispatch(getVehicleLocationsAction(userId)).unwrap();
     } catch (error) {
       // NOTE: Sometimes API doesn't return data. In that case, try again
       // In real world scenario, max retry attempt count should be set
@@ -32,6 +32,7 @@ const useGetVehicleLocations = () => {
     setSelectedVehicleId,
     vehicleLocations,
     selectedVehicleId,
+    lastFetched,
   };
 };
 
